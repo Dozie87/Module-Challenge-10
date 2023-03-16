@@ -1,4 +1,4 @@
-station,name,latitude,longitude,elevation
+stations,name,latitude,longitude,elevation
 USC00519397,"WAIKIKI 717.2, HI US",21.2716,-157.8168,3
 USC00513117,"KANEOHE 838.1, HI US",21.4234,-157.8015,14.6
 USC00514830,"KUALOA RANCH HEADQUARTERS 886.9, HI US",21.5213,-157.8374,7
