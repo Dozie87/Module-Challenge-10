@@ -13,7 +13,7 @@ engine = create_engine("sqlite:///Resources/hawaii.sqlite")
 Base = automap_base()
 Base.prepare(engine)
 
-measurement = Base.classes.measurement
+Measurement = Base.classes.measurement
 Station = Base.classes.station
 
 session = Session(engine)
@@ -26,7 +26,7 @@ def welcome():
         f"Welcome to Hawaii Climate Analysis API<br/>"
         f"Available Routes:<br/>"
         f"/api/v1.0/precipitation<br/>"
-        f"/api/v1.0/stations/<br/>"
+        f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
         f"/api/v1.0/temp/start<br/>"
         f"/api/v1.0/temp/start/end<br/>"
@@ -36,8 +36,8 @@ def welcome():
 def precipitation():
     prev_year =dt.date(2017,8,23) - dt.timedelta(days=365)
 
-    precipitation = session.query(measurement.date, measurement.prcp).\
-        filter(measurement.date >= prev_year).all()
+    precipitation = session.query(Measurement.date, Measurement.prcp).\
+        filter(Measurement.date >= prev_year).all()
 
     session.close()
     precip = {date: prcp for date, prcp in precipitation}
@@ -46,7 +46,9 @@ def precipitation():
 
 @app.route("/api/v1.0/stations")
 def stations():
-    results = session.query(Station.stations).all()
+    results = session.query(Station.station).all()
+
+    print(results)
 
     session.close()
 
@@ -58,9 +60,9 @@ def stations():
 def temp_monthly():
     prev_year = dt.date(2017,8,23) - dt.timedelta(days=365)
 
-    results = session.query(measurement.tobs).\
-        filter(measurement.stations == 'USC00519281').\
-        filter(measurement.date >= prev_year).all()
+    results = session.query(Measurement.tobs).\
+        filter(Measurement.station == 'USC00519281').\
+        filter(Measurement.date >= prev_year).all()
 
     session.close()
 
@@ -74,24 +76,24 @@ def temp_monthly():
 @app.route("/api/v1.0/temp/<start>/<end>")
 def stats(start=None, end=None):
 
-    sel = [func.min(measurement.tobs), func.avg(measuremnt.tobs), func.max(measurement.tobs)]
+    sel = [func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)]
 
     if not end:
         start = dt.datetime.strptime(start, "%m%d%Y")
         results =session.query(*sel).\
-            filter(measurement.date >= start).all()
+            filter(Measurement.date >= start).all()
 
         session.close()
 
         temps = list(np.ravel(results))
-        return jsonify(temps=temps)
+        return jsonify(temps)
 
     start =dt.datetime.strptime(start, "%m%d%Y")
     end = dt.datetime.strptime(end, "%m%d%Y")
 
     results =session.query(*sel).\
-        filter(measurement.date >= start).all().\
-        filter(measurement.date <= end).all()
+        filter(Measurement.date >= start).\
+        filter(Measurement.date <= end).all()
 
     print(start)
     print(end)
@@ -101,7 +103,7 @@ def stats(start=None, end=None):
 
     temps = list(np.ravel(results))
 
-    return jsonify(temps)
+    return jsonify(temps=temps)
 
 if __name__ == "__main__":
     app.run(debug=True)
